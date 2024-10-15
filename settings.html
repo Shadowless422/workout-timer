@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings page</title>
+    <style>
+        h1 {
+            font-family: Courier, monospace;
+            font-style: normal;
+            text-align: center;
+        }
+        body {
+            font-family: Helvetica, serif;
+            font-style: normal;
+            font-weight: bold;
+            text-align: left;
+        }
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        td {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>Timer Settings</h1>
+    <form>
+        <table>
+            <tr>
+                <td><label for="workout-time">Workout time (s)</label></td>
+                <td><input type="number" id="workout-time" placeholder="45" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rest-time">Rest time (s)</label></td>
+                <td><input type="number" id="rest-time" name="rest-time" placeholder="15" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rounds">Working rounds</label></td>
+                <td><input type="number" id="rounds" name="rounds" placeholder="3" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="cycles">Full cycles</label></td>
+                <td><input type="number" id="cycles" name="cycles" placeholder="1" min="1"></td>
+            </tr>
+        </table>
+        <br>
+        <div style="text-align: center">
+            <button id="start-pause">Start</button>
+            <button id="stop">Stop</button>
+        </div>
+    </form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "workout_timer",
+  "version": "1.0.0",
+  "description": "A workout (tabata) timer that syncs with all the clients currently connected.",
+  "main": "timer.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gioele Segnini",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "socket.io": "^4.8.0"
+  }
+}
