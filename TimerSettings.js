@@ -1,4 +1,4 @@
-class TimerSetting {
+class TimerSettings {
     constructor(workoutTime = 45, restTime = 15, rounds = 3, cycles = 1) {
         this.workoutTime = workoutTime;
         this.restTime = restTime;
@@ -18,4 +18,4 @@ class TimerSetting {
     }
 }
 
-module.exports = TimerSetting;
+module.exports = TimerSettings;

@@ -25,9 +25,15 @@
     <h1>Workout Timer</h1>
     <table>
         <tr>
-            <td style="text-align: right">Current status</td>
+            <td style="text-align: right">Current state</td>
             <td>
-                <span style="color: darkred" id="status">Rest</span>
+                <span id="running-state">Paused</span>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right">Current phase</td>
+            <td>
+                <span style="color: darkgreen" id="phase">Work</span>
             </td>
         </tr>
         <tr>
@@ -56,5 +62,24 @@
         </tr>
     </table>
 </body>
-<script src="timerEngine.js"></script>
+<script src='/socket.io/socket.io.js'></script>
+<script>
+    const socket = io(); // Connect to the server
+
+    // Listen for timer updates from the server
+    socket.on('timer-update', (timerState, timerSettings) => {
+        document.getElementById('running-state').innerText = timerState.isRunning ? 'Running' : 'Paused';
+        document.getElementById('phase').innerText = timerState.phase;
+        document.getElementById('time-left').innerText = formatTime(timerState.timeLeft);
+        document.getElementById('round').innerText = `${timerState.round}/${timerSettings.rounds}`;
+        document.getElementById('cycle').innerText = `${timerState.cycle}/${timerSettings.cycles}`;
+    });
+
+    // Utility function to format time as mm:ss
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+</script>
 </html>

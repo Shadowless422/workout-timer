@@ -30,26 +30,79 @@
         <table>
             <tr>
                 <td><label for="workout-time">Workout time (s)</label></td>
-                <td><input type="number" id="workout-time" placeholder="45" min="1"></td>
+                <td><input type="number" id="workout-time" min="1"></td>
             </tr>
             <tr>
                 <td><label for="rest-time">Rest time (s)</label></td>
-                <td><input type="number" id="rest-time" name="rest-time" placeholder="15" min="1"></td>
+                <td><input type="number" id="rest-time" name="rest-time" min="1"></td>
             </tr>
             <tr>
                 <td><label for="rounds">Working rounds</label></td>
-                <td><input type="number" id="rounds" name="rounds" placeholder="3" min="1"></td>
+                <td><input type="number" id="rounds" name="rounds" min="1"></td>
             </tr>
             <tr>
                 <td><label for="cycles">Full cycles</label></td>
-                <td><input type="number" id="cycles" name="cycles" placeholder="1" min="1"></td>
+                <td><input type="number" id="cycles" name="cycles" min="1"></td>
             </tr>
         </table>
-        <br>
         <div style="text-align: center">
-            <button id="start-pause">Start</button>
-            <button id="stop">Stop</button>
+            <button id="submit-settings" type="button">Confirm Settings</button>
+            <br><br>
+            <button id="start-pause" type="button">Start</button>
+            <br>
+            <button id="stop" type="button">Stop</button>
         </div>
     </form>
 </body>
+<script src='/socket.io/socket.io.js'></script>
+<script>
+    const socket = io(); // Connect to the server
+
+    // Handle start/pause button click
+    document.getElementById('start-pause').addEventListener('click', function () {
+        const command = this.innerText === 'Start' ? 'start' : 'pause';
+        socket.emit('timer-command', command);
+    });
+
+    // Handle stop button click
+    document.getElementById('stop').addEventListener('click', () => {
+        socket.emit('timer-command', 'stop');
+    });
+
+    // Send updated settings to the server
+    function sendUpdatedSettings() {
+        const settings = {
+            workoutTime: parseInt(document.getElementById('workout-time').value),
+            restTime: parseInt(document.getElementById('rest-time').value),
+            rounds: parseInt(document.getElementById('rounds').value),
+            cycles: parseInt(document.getElementById('cycles').value)
+        };
+
+        socket.emit('new-settings', settings);
+    }
+
+    // Listen for changes in the input fields, this way the settings are constantly updated
+    /*
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => input.addEventListener('change', sendUpdatedSettings));
+     */
+
+    // Submit settings with the relative button, this way the settings get updated only when confirmed
+    document.getElementById('submit-settings').addEventListener('click', () => {
+        sendUpdatedSettings()
+    });
+
+    // Update form with current settings when connected
+    socket.on('settings-update', (timerSettings) => {
+        document.getElementById('workout-time').value = timerSettings.workoutTime;
+        document.getElementById('rest-time').value = timerSettings.restTime;
+        document.getElementById('rounds').value = timerSettings.rounds;
+        document.getElementById('cycles').value = timerSettings.cycles;
+    });
+
+    // Update the start/pause button according to the timer state
+    socket.on('timer-update', (timerState, timerSettings) => {
+        document.getElementById('start-pause').innerText = timerState.isRunning ? 'Pause' : 'Start'
+    });
+</script>
 </html>
