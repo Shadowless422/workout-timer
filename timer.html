@@ -43,12 +43,6 @@
             </td>
         </tr>
         <tr>
-            <td style="text-align: right">Time elapsed</td>
-            <td>
-                <span id="time-elapsed">00:00</span>
-            </td>
-        </tr>
-        <tr>
             <td style="text-align: right">Round</td>
             <td>
                 <span id="round">1/1</span>
@@ -67,6 +61,8 @@
     const socket = io(); // Connect to the server
 
     // Listen for timer updates from the server
+    // TODO: add feedback sounds for phase changes and 3,2,1 time left
+    // TODO: change bg and text color according to the current phase
     socket.on('timer-update', (timerState, timerSettings) => {
         document.getElementById('running-state').innerText = timerState.isRunning ? 'Running' : 'Paused';
         document.getElementById('phase').innerText = timerState.phase;

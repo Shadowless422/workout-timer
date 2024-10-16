@@ -29,12 +29,20 @@
     <form>
         <table>
             <tr>
+                <td><label for="prepare-time">Prepare time (s)</label></td>
+                <td><input type="number" id="prepare-time" min="1"></td>
+            </tr>
+            <tr>
                 <td><label for="workout-time">Workout time (s)</label></td>
                 <td><input type="number" id="workout-time" min="1"></td>
             </tr>
             <tr>
                 <td><label for="rest-time">Rest time (s)</label></td>
                 <td><input type="number" id="rest-time" name="rest-time" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rest-between-cycles">Rest between cycles (s)</label></td>
+                <td><input type="number" id="rest-between-cycles" name="rest-between-cycles" min="1"></td>
             </tr>
             <tr>
                 <td><label for="rounds">Working rounds</label></td>
@@ -69,18 +77,6 @@
         socket.emit('timer-command', 'stop');
     });
 
-    // Send updated settings to the server
-    function sendUpdatedSettings() {
-        const settings = {
-            workoutTime: parseInt(document.getElementById('workout-time').value),
-            restTime: parseInt(document.getElementById('rest-time').value),
-            rounds: parseInt(document.getElementById('rounds').value),
-            cycles: parseInt(document.getElementById('cycles').value)
-        };
-
-        socket.emit('new-settings', settings);
-    }
-
     // Listen for changes in the input fields, this way the settings are constantly updated
     /*
     const inputs = document.querySelectorAll('input');
@@ -89,12 +85,23 @@
 
     // Submit settings with the relative button, this way the settings get updated only when confirmed
     document.getElementById('submit-settings').addEventListener('click', () => {
-        sendUpdatedSettings()
+        const settings = {
+            prepareTime: parseInt(document.getElementById('prepare-time').value),
+            workoutTime: parseInt(document.getElementById('workout-time').value),
+            restTime: parseInt(document.getElementById('rest-time').value),
+            restBetweenCycles: parseInt(document.getElementById('rest-between-cycles').value),
+            rounds: parseInt(document.getElementById('rounds').value),
+            cycles: parseInt(document.getElementById('cycles').value)
+        };
+
+        socket.emit('new-settings', settings);
     });
 
     // Update form with current settings when connected
     socket.on('settings-update', (timerSettings) => {
+        document.getElementById('prepare-time').value = timerSettings.prepareTime;
         document.getElementById('workout-time').value = timerSettings.workoutTime;
+        document.getElementById('rest-between-cycles').value = timerSettings.restBetweenCycles;
         document.getElementById('rest-time').value = timerSettings.restTime;
         document.getElementById('rounds').value = timerSettings.rounds;
         document.getElementById('cycles').value = timerSettings.cycles;

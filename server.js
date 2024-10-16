@@ -25,64 +25,49 @@ app.get('/settings', async (req, res) => {
     res.send(await readFile('./settings.html', 'utf8'));
 });
 
-// Timer update function
-// To add: go from working to rest, update rounds and cycles
 function updateTimer() {
-    /*
-    * Timer logic:
-    * - when start from beginning: status running, phase working, timeleft = workout time
-    * - when running:   if phase work, 0 < timeleft < workoutTime, if phase rest 0 < timeleft < restTime
-    *                   if timeLeft > 0: timeLeft--
-    *                   else: phase swap -> if from rest to work check rounds and cycles -> timeLeft = new phase time
-    * - when paused:    nothing changes
-    * - when stopped:   status stopped, phase working, timeleft = workout time (decide if reset has to be done here)
-    *
-    * // Old code
-    if (timerState.status === 'running') {
-        timerState.timeLeft--;
-
-        if (timerState.timeLeft <= 0) {
-            timerState.status = 'stopped';  // Reset logic
-        }
-
-        io.emit('timer-update', timerState, timerSettings);  // Broadcast the updated state
-    }
-    */
     if (!timerState.isRunning)
         return;
-
     if (timerState.timeLeft > 0) {
         timerState.timeLeft--;
         return;
     }
-
     // The time left is 0
     const isLastRound = timerState.round === timerSettings.rounds;
     const isLastCycle = timerState.cycle === timerSettings.cycles;
 
-    if (timerState.phase === 'Rest') {
-        if (isLastRound && isLastCycle) {
-            // TODO: add some feedback sound here
-            timerState.reset(timerSettings);
-            return;
-        }
-
-        if (isLastRound) {
-            timerState.cycle++;
-            timerState.round = 1;
-        } else {
-            timerState.round++;
-        }
-
-        timerState.phase = 'Work';
-        timerState.timeLeft = timerSettings.workoutTime;
-        return;
+    switch (timerState.phase) {
+        case 'Prepare':
+            timerState.phase = 'Work';
+            timerState.timeLeft = timerSettings.workoutTime;
+            break;
+        case 'Rest':
+            if (isLastRound && isLastCycle) {
+                timerState.reset(timerSettings);
+                break;
+            }
+            if (isLastRound) {
+                timerState.cycle++;
+                timerState.round = 1;
+                timerState.phase = 'Rest Between Cycles';
+                timerState.timeLeft = timerSettings.restBetweenCycles;
+            } else {
+                timerState.round++;
+                timerState.phase = 'Work';
+                timerState.timeLeft = timerSettings.workoutTime;
+            }
+            break;
+        case 'Rest Between Cycles':
+            timerState.phase = 'Work';
+            timerState.timeLeft = timerSettings.prepareTime;
+            break;
+        default:
+            timerState.phase = 'Rest';
+            timerState.timeLeft = timerSettings.restTime; // Assuming restTime is the correct value here
+            break;
     }
-
-    // TODO: add some feedback sound here
-    timerState.phase = 'Rest';
-    timerState.timeLeft = timerSettings.restTime; // Assuming restTime is the correct value here
 }
+
 
 // Update the timer every second
 setInterval(() => {
@@ -94,6 +79,7 @@ setInterval(() => {
 io.on('connection', (socket) => {
     // Send the current state to new clients
     socket.emit('timer-update', timerState, timerSettings);
+    socket.emit('settings-update', timerSettings);
 
     // Handle timer commands
     socket.on('timer-command', (command) => {
@@ -113,6 +99,9 @@ io.on('connection', (socket) => {
 
     // Handle timer settings update
     socket.on('new-settings', (settings) => {
+        if (!timerSettings.validate(settings))
+            return;
+
         timerSettings.update(settings);
         timerState.reset(timerSettings);
 

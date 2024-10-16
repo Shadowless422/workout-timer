@@ -2,7 +2,7 @@ class TimerState {
     constructor(timeLeft = 60,
                 round = 1,
                 cycle = 1,
-                phase = 'Work',
+                phase = 'Prepare',
                 running = false){
         this.timeLeft = timeLeft;
         this.round = round;
@@ -12,10 +12,10 @@ class TimerState {
     }
 
     reset(timerSettings) {
-        this.timeLeft = timerSettings.workoutTime;
+        this.timeLeft = timerSettings.prepareTime;
         this.round = 1;
         this.cycle = 1;
-        this.phase = 'work';
+        this.phase = 'Prepare';
         this.isRunning = false;
     }
 }
