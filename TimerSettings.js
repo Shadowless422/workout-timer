@@ -1,10 +1,10 @@
 class TimerSettings {
     prepareTime;
-    constructor(prepareTime = 5,
+    constructor(prepareTime = 15,
                 workoutTime = 150,
-                restTime = 15,
-                restBetweenCycles = 30,
-                rounds = 3,
+                restTime = 60,
+                restBetweenCycles = 45,
+                rounds = 5,
                 cycles = 1) {
         this.prepareTime = prepareTime;
         this.workoutTime = workoutTime;

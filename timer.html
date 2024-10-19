@@ -1,60 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
+    <meta charset='UTF-8'>
     <title>Workout Timer</title>
     <style>
-        h1 {
-            font-family: Courier, monospace;
-            font-style: normal;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f2f33d;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;  /* Ensure the container takes the full height */
+            width: 100vw;
             text-align: center;
         }
-        body {
-            font-family: Helvetica, serif;
-            font-style: normal;
-            font-weight: bold;
-            text-align: left;
+
+        .header {
+            flex: 0 0 10%;
+            display: flex;
+            justify-content: center;
+            border: 1px solid black;
         }
-        table {
-            margin-left: auto;
-            margin-right: auto;
+
+        .header div {
+            flex: auto;
+            background-color: black; //#333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5vmax;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #timer {
+            font-size: 35vw;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            color: black;
+        }
+
+        .bottom-bar {
+            flex: 0 0 10%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bottom-bar div {
+            flex: 1;
+            background-color: black; //#333;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4vw;
+            border: 1px solid black;
+        }
+
+        .bottom-bar-label {
+            font-size: 2.6vw;
         }
     </style>
 </head>
-<body>
-    <h1>Workout Timer</h1>
-    <table>
-        <tr>
-            <td style="text-align: right">Current state</td>
-            <td>
-                <span id="running-state">Paused</span>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Current phase</td>
-            <td>
-                <span style="color: darkgreen" id="phase">Work</span>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Time left</td>
-            <td>
-                <span id="time-left">00:00</span>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Round</td>
-            <td>
-                <span id="round">1/1</span>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: right">Cycle</td>
-            <td>
-                <span id="cycle">1/1</span>
-            </td>
-        </tr>
-    </table>
+<body id="timer-background">
+    <div class='container'>
+        <div class='header'>
+            <div id='phase'></div>
+        </div>
+        <div class='main-content'>
+            <span id='timer'></span>
+        </div>
+        <div class='bottom-bar'>
+            <div class='left'>
+                <span id='round' style='color: dodgerblue'></span>
+                <span>&nbsp;</span>
+                <span class='bottom-bar-label' id='rounds-left-text'></span>
+            </div>
+            <div class='center' id='info-separator' style='background-color: #f2f33d; border: 0'></div>
+            <div class='right'>
+                <span id='cycle' style='color: #f2f33d'></span>
+                <span>&nbsp;</span>
+                <span class='bottom-bar-label' id='cycles-left-text'></span>
+            </div>
+        </div>
+    </div>
 </body>
 <script src='/socket.io/socket.io.js'></script>
 <script>
@@ -64,18 +118,67 @@
     // TODO: add feedback sounds for phase changes and 3,2,1 time left
     // TODO: change bg and text color according to the current phase
     socket.on('timer-update', (timerState, timerSettings) => {
-        document.getElementById('running-state').innerText = timerState.isRunning ? 'Running' : 'Paused';
-        document.getElementById('phase').innerText = timerState.phase;
-        document.getElementById('time-left').innerText = formatTime(timerState.timeLeft);
-        document.getElementById('round').innerText = `${timerState.round}/${timerSettings.rounds}`;
-        document.getElementById('cycle').innerText = `${timerState.cycle}/${timerSettings.cycles}`;
+        updatePhaseAndTimer(timerState.phase, timerState.timeLeft);
+        updateRoundsLeftText(timerSettings.rounds, timerState.round);
+        updateCyclesLeftText(timerSettings.cycles, timerState.cycle);
     });
-
+    
     // Utility function to format time as mm:ss
     function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
         return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    
+    // Function to update the phase with the right text
+    function updatePhaseAndTimer(phase, timeLeft) {
+        let phaseText;
+        let timerTextColor;
+        let timerBgColor;
+
+        switch (phase) {
+            case 'Prepare':
+                phaseText = 'PREPARAZIONE';
+                timerBgColor = '#f2f33d';
+                timerTextColor = 'black';
+                break;
+            case 'Work':
+                phaseText = 'ALLENAMENTO';
+                timerBgColor = '#92f443';
+                timerTextColor = 'black';
+                break;
+            case 'Rest':
+                phaseText = 'RIPOSO';
+                timerBgColor = '#e7372b';
+                timerTextColor = 'white';
+                break;
+            case 'Rest Between Cycles':
+                phaseText = 'PAUSA PRIMA DEL PROSSIMO CICLO'
+                timerBgColor = '#f2f33d';
+                timerTextColor = 'black';
+                break;
+            default:
+                console.warn(`Unknown state: ${timerState.phase}`)
+        }
+        document.getElementById('phase').innerText = phaseText;
+        document.getElementById('timer').innerText = formatTime(timeLeft);
+        document.getElementById('timer').style.color = timerTextColor;
+        document.getElementById('timer-background').style.backgroundColor = timerBgColor;
+        document.getElementById('info-separator').style.backgroundColor = timerBgColor;
+        
+        // TODO: add background change and timer text color change accordingly
+    }
+
+    function updateRoundsLeftText(totalRounds, currentRound) {
+        const roundsLeft = totalRounds - currentRound;
+        document.getElementById('round').innerText = `${roundsLeft}`;
+        document.getElementById('rounds-left-text').innerText = roundsLeft === 1 ? 'ROUND RIMANENTE' : 'ROUND RIMANENTI'
+    }
+
+    function updateCyclesLeftText(totalCycles, currentCycle) {
+        const cyclesLeft = totalCycles - currentCycle;
+        document.getElementById('cycle').innerText = `${cyclesLeft}`;
+        document.getElementById('cycles-left-text').innerText = cyclesLeft === 1 ? 'CICLO RIMANENTE' : 'CICLI RIMANENTI'
     }
 </script>
 </html>

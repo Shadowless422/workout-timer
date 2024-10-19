@@ -32,6 +32,7 @@ function updateTimer() {
         timerState.timeLeft--;
         return;
     }
+
     // The time left is 0
     const isLastRound = timerState.round === timerSettings.rounds;
     const isLastCycle = timerState.cycle === timerSettings.cycles;
@@ -40,6 +41,8 @@ function updateTimer() {
         case 'Prepare':
             timerState.phase = 'Work';
             timerState.timeLeft = timerSettings.workoutTime;
+            timerState.round++;
+            timerState.phase++;
             break;
         case 'Rest':
             if (isLastRound && isLastCycle) {
