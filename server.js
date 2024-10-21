@@ -7,16 +7,15 @@ const TimerState = require('./TimerState');
 const app = express();
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => console.log(
-    `Timer page available on http://localhost:${port}/timer\nSettings page available on http://localhost:${port}/settings`));
+    `Timer page available on http://localhost:${port}/\nSettings page available on http://localhost:${port}/settings`));
 const io = socketio(server);
 
-let timerState = new TimerState();
-
-// Create a new instance of TimerSetting
 let timerSettings = new TimerSettings();
+let timerState = new TimerState();
+timerState.timeLeft = timerSettings.prepareTime;
 
 // Send the timer page
-app.get('/timer', async (req, res) => {
+app.get('/', async (req, res) => {
     res.send(await readFile('./timer.html', 'utf8'));
 });
 
@@ -42,7 +41,7 @@ function updateTimer() {
             timerState.phase = 'Work';
             timerState.timeLeft = timerSettings.workoutTime;
             timerState.round++;
-            timerState.phase++;
+            timerState.cycle++;
             break;
         case 'Rest':
             if (isLastRound && isLastCycle) {
@@ -50,14 +49,14 @@ function updateTimer() {
                 break;
             }
             if (isLastRound) {
-                timerState.cycle++;
-                timerState.round = 1;
                 timerState.phase = 'Rest Between Cycles';
                 timerState.timeLeft = timerSettings.restBetweenCycles;
-            } else {
-                timerState.round++;
+                timerState.round = 1;
+                timerState.cycle++;
+            } else { //isLastCycle either true or not, doesn't matter
                 timerState.phase = 'Work';
                 timerState.timeLeft = timerSettings.workoutTime;
+                timerState.round++;
             }
             break;
         case 'Rest Between Cycles':
@@ -66,7 +65,7 @@ function updateTimer() {
             break;
         default:
             timerState.phase = 'Rest';
-            timerState.timeLeft = timerSettings.restTime; // Assuming restTime is the correct value here
+            timerState.timeLeft = timerSettings.restTime;
             break;
     }
 }

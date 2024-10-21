@@ -1,115 +1,309 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
-    <title>Settings page</title>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Workout Timer Settings</title>
     <style>
-        h1 {
-            font-family: Courier, monospace;
-            font-style: normal;
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+        }
+
+        input {
+            text-align: center;
+            font-size: xx-large;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px;
+            background-color: rgba(51, 51, 51, 0.20);
+        }
+
+        .setting-input {
+            font-size: xx-large;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
-        body {
-            font-family: Helvetica, serif;
-            font-style: normal;
+
+        h1, h2 {
+            margin: 0;
+        }
+
+        .settings-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .setting-item {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .page {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            background-color: #f9f9f9;
+            transition: left 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+            left: 0;
+        }
+
+        button {
+            font-size: 85%;
+            padding: 10px;
+            margin: 5px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background-color: #e7372b;
+        }
+
+        .save-button {
             font-weight: bold;
-            text-align: left;
+            background-color: #28a745;
         }
-        table {
-            margin-left: auto;
-            margin-right: auto;
-        }
-        td {
-            text-align: right;
+
+        button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <h1>Timer Settings</h1>
-    <form>
-        <table>
-            <tr>
-                <td><label for="prepare-time">Prepare time (s)</label></td>
-                <td><input type="number" id="prepare-time" min="1"></td>
-            </tr>
-            <tr>
-                <td><label for="workout-time">Workout time (s)</label></td>
-                <td><input type="number" id="workout-time" min="1"></td>
-            </tr>
-            <tr>
-                <td><label for="rest-time">Rest time (s)</label></td>
-                <td><input type="number" id="rest-time" name="rest-time" min="1"></td>
-            </tr>
-            <tr>
-                <td><label for="rest-between-cycles">Rest between cycles (s)</label></td>
-                <td><input type="number" id="rest-between-cycles" name="rest-between-cycles" min="1"></td>
-            </tr>
-            <tr>
-                <td><label for="rounds">Working rounds</label></td>
-                <td><input type="number" id="rounds" name="rounds" min="1"></td>
-            </tr>
-            <tr>
-                <td><label for="cycles">Full cycles</label></td>
-                <td><input type="number" id="cycles" name="cycles" min="1"></td>
-            </tr>
-        </table>
-        <div style="text-align: center">
-            <button id="submit-settings" type="button">Confirm Settings</button>
-            <br><br>
-            <button id="start-pause" type="button">Start</button>
-            <br>
-            <button id="stop" type="button">Stop</button>
-        </div>
+
+<!-- Main Settings Page -->
+<div id='main' class='page active'>
+    <header>
+        <!-- The buttons are needed in order to correctly resize the header and center the h1 -->
+        <button style='background-color: #333333'>&nbsp;</button>
+        <h1>Impostazioni</h1>
+        <button style='background-color: #333333'>&nbsp;</button>
+    </header>
+    <ul class='settings-list'>
+        <li class='setting-item' onclick="showSettingPage('prepare')">
+            <span id="prepare-display-name">Preparazione</span>
+            <span id='current-prepare-setting'>00:15</span>
+        </li>
+        <li class='setting-item' onclick="showSettingPage('work')">
+            <span id='work-display-name'>Allenamento</span>
+            <span id='current-work-setting'>02:30</span>
+        </li>
+        <li class='setting-item' onclick="showSettingPage('rest')">
+            <span id='rest-display-name'>Riposo</span>
+            <span id="current-rest-setting">01:00</span>
+        </li>
+        <li class='setting-item' onclick="showSettingPage('rounds')">
+            <span id='rounds-display-name'>Round</span>
+            <span id='current-rounds-setting'>5</span>
+        </li>
+        <li class='setting-item' onclick="showSettingPage('cycles')">
+            <span id='cycles-display-name'>Cicli</span>
+            <span id='current-cycles-setting'>1</span>
+        </li>
+        <li class='setting-item' onclick="showSettingPage('restbc')">
+            <span id='restbc-display-name'>Riposo tra un ciclo e l'altro</span>
+            <span id='current-restbc-setting'>00:45</span>
+        </li>
+    </ul>
+</div>
+
+<!-- Single Settings Pages -->
+<div class='page' id='time-setting'>
+    <header>
+        <button class='cancel-button' onclick='goBack()'>Annulla</button>
+        <h1 id='time-setting-title'></h1>
+        <button class='save-button' id='time-setting-save-button' onclick='saveSetting()'>Salva</button>
+    </header>
+    <br>
+    <br>
+    <form class='setting-input' onfocusout=zeroPadInputs()>
+        <label for='time-setting-min'>
+            <input id='time-setting-min' pattern='[0-9]*' maxlength='2' size='2' onclick=this.select()>
+        </label>
+        <span>:</span>
+        <label for='time-setting-sec'>
+            <input id='time-setting-sec' pattern='[0-9]*' maxlength='2' size='2' onclick=this.select()>
+        </label>
     </form>
+</div>
+
+<div class='page' id='number-setting'>
+    <header>
+        <button class='cancel-button' onclick='goBack()'>Annulla</button>
+        <h1 id='number-setting-title'></h1>
+        <button class='save-button' id='number-setting-save-button' onclick='saveSetting()'>Salva</button>
+    </header>
+    <br>
+    <br>
+    <form class='setting-input'>
+        <label for='number-setting-value'>
+            <input id='number-setting-value' pattern='[0-9]*' maxlength='2' size='2' onclick=this.select()>
+        </label>
+    </form>
+</div>
+
 </body>
 <script src='/socket.io/socket.io.js'></script>
 <script>
     const socket = io(); // Connect to the server
 
-    // Handle start/pause button click
-    document.getElementById('start-pause').addEventListener('click', function () {
-        const command = this.innerText === 'Start' ? 'start' : 'pause';
-        socket.emit('timer-command', command);
-    });
-
-    // Handle stop button click
-    document.getElementById('stop').addEventListener('click', () => {
-        socket.emit('timer-command', 'stop');
-    });
-
-    // Listen for changes in the input fields, this way the settings are constantly updated
-    /*
-    const inputs = document.querySelectorAll('input');
-    inputs.forEach(input => input.addEventListener('change', sendUpdatedSettings));
-     */
-
-    // Submit settings with the relative button, this way the settings get updated only when confirmed
-    document.getElementById('submit-settings').addEventListener('click', () => {
-        const settings = {
-            prepareTime: parseInt(document.getElementById('prepare-time').value),
-            workoutTime: parseInt(document.getElementById('workout-time').value),
-            restTime: parseInt(document.getElementById('rest-time').value),
-            restBetweenCycles: parseInt(document.getElementById('rest-between-cycles').value),
-            rounds: parseInt(document.getElementById('rounds').value),
-            cycles: parseInt(document.getElementById('cycles').value)
-        };
-
-        socket.emit('new-settings', settings);
-    });
-
     // Update form with current settings when connected
+    // TODO: edit the function according to this page
     socket.on('settings-update', (timerSettings) => {
-        document.getElementById('prepare-time').value = timerSettings.prepareTime;
-        document.getElementById('workout-time').value = timerSettings.workoutTime;
-        document.getElementById('rest-between-cycles').value = timerSettings.restBetweenCycles;
-        document.getElementById('rest-time').value = timerSettings.restTime;
-        document.getElementById('rounds').value = timerSettings.rounds;
-        document.getElementById('cycles').value = timerSettings.cycles;
+        document.getElementById('current-prepare-setting').textContent = formatTime(timerSettings.prepareTime);
+        document.getElementById('current-work-setting').textContent = formatTime(timerSettings.workoutTime);
+        document.getElementById('current-rest-setting').textContent = formatTime(timerSettings.restTime);
+        document.getElementById('current-rounds-setting').textContent = timerSettings.rounds;
+        document.getElementById('current-cycles-setting').textContent = timerSettings.cycles;
+        document.getElementById('current-restbc-setting').textContent = formatTime(timerSettings.restBetweenCycles);
     });
 
     // Update the start/pause button according to the timer state
-    socket.on('timer-update', (timerState, timerSettings) => {
-        document.getElementById('start-pause').innerText = timerState.isRunning ? 'Pause' : 'Start'
+    /*
+    socket.on('timer-update', (timerState) => {
+        document.getElementById('start-pause').textContent = timerState.isRunning ? 'Pause' : 'Start'
     });
+    */
+    // Function to show a specific setting page
+    function showSettingPage(setting) {
+        const pageId = isTimeSetting(setting) ? 'time-setting' : 'number-setting';
+
+        // Populate the page with the info
+        document.getElementById(pageId + '-title').textContent =
+            document.getElementById(setting + '-display-name').textContent;
+
+        document.getElementById(pageId + '-save-button').setAttribute('onclick', `saveSetting('${setting}')`);
+
+        const currentSetting = document.getElementById('current-' + setting + '-setting').textContent;
+        if (isTimeSetting(setting)) {
+            const {mm, ss} = extractTimeComponents(currentSetting);
+            console.log(`${mm}:${ss}`);
+            document.getElementById(pageId + '-min').value = mm;
+            document.getElementById(pageId + '-sec').value = ss;
+        } else {
+            document.getElementById(pageId + '-value').value = currentSetting;
+        }
+
+        // Hide the main settings page and show the single setting page
+        document.getElementById('main').classList.remove('active');
+        document.getElementById(pageId).style.left = '0';
+        document.getElementById(pageId).classList.add('active');
+    }
+
+    // Function to go back to the main settings page
+    function goBack() {
+        const activePage = document.querySelector('.page.active');
+        activePage.style.left = '100%';
+        activePage.classList.remove('active');
+        document.getElementById('main').classList.add('active');
+    }
+
+    // Function to save the setting and return. It saves one setting at a time
+    function saveSetting(setting) {
+        let settingValue;
+        if (isTimeSetting(setting)) {
+            const minutes = parseInt(document.getElementById('time-setting-min').value);
+            const seconds = parseInt(document.getElementById('time-setting-sec').value);
+
+            if (!isValidTime(minutes, seconds)) {
+                console.warn(`Setting value invalid: ${minutes}:${seconds}`);
+                return;
+            }
+
+            settingValue = minutes * 60 + seconds;
+        } else {
+            settingValue = parseInt(document.getElementById('number-setting-value').value);
+
+            if (settingValue < 1) {
+                console.warn(`Setting value invalid: ${settingValue}`);
+                return;
+            }
+        }
+
+        const newSettings = {
+            prepareTime: setting === 'prepare' ? settingValue : null,
+            workoutTime: setting === 'work' ? settingValue : null,
+            restTime: setting === 'rest' ? settingValue : null,
+            restBetweenCycles: setting === 'restbc' ? settingValue : null,
+            rounds: setting === 'rounds' ? settingValue : null,
+            cycles: setting === 'cycles' ? settingValue : null
+        };
+        socket.emit('new-settings', newSettings);
+
+        goBack();
+    }
+
+    function zeroPadInputs() {
+        const inputs = document.getElementsByTagName('input');
+        for (let input of inputs) {
+            input.value = input.value.padStart(2, '0');
+        }
+    }
+
+    // seconds -> mm:ss
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    function extractTimeComponents(time) {
+        const values = time.split(':');
+        return {
+            mm: values[0],
+            ss: values[1]
+        }
+    }
+
+    function isTimeSetting (setting) {
+        switch (setting) {
+            case 'prepare':
+            case 'work':
+            case 'rest':
+            case 'restbc':
+                return true;
+            case 'rounds':
+            case 'cycles':
+                return false;
+            default:
+                console.error(`Unknown setting name: ${setting}`);
+        }
+    }
+
+    function isValidTime(minutes, seconds) {
+        return (
+            (minutes >= 0 && minutes <= 59) &&
+            (seconds >= 0 && seconds <= 59) &&
+            (minutes > 0 || seconds > 0)
+        );
+    }
 </script>
 </html>

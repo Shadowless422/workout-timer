@@ -25,12 +25,12 @@ class TimerSettings {
 
     validate(settings) {
         const isValid = (
-               typeof settings.prepareTime === 'number' && settings.prepareTime >= 0
-            && typeof settings.workoutTime === 'number' && settings.workoutTime > 0
-            && typeof settings.restTime === 'number' && settings.restTime > 0
-            && typeof settings.restBetweenCycles === 'number' && settings.restBetweenCycles > 0
-            && typeof settings.rounds === 'number' && settings.rounds > 0
-            && typeof settings.cycles === 'number' && settings.cycles > 0
+            ((typeof settings.prepareTime === 'number' && settings.prepareTime >= 0) || settings.prepareTime == null) &&
+            ((typeof settings.workoutTime === 'number' && settings.workoutTime > 0) || settings.workoutTime == null) &&
+            ((typeof settings.restTime === 'number' && settings.restTime > 0) || settings.restTime == null) &&
+            ((typeof settings.restBetweenCycles === 'number' && settings.restBetweenCycles > 0) || settings.restBetweenCycles == null) &&
+            ((typeof settings.rounds === 'number' && settings.rounds > 0) || settings.rounds == null) &&
+            ((typeof settings.cycles === 'number' && settings.cycles > 0) || settings.cycles == null)
         );
 
         if (!isValid) {
@@ -39,6 +39,8 @@ class TimerSettings {
 
         return isValid;
     }
+
+
 }
 
 module.exports = TimerSettings;

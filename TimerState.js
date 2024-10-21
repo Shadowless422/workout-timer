@@ -1,5 +1,5 @@
 class TimerState {
-    constructor(timeLeft = 60,
+    constructor(timeLeft = 0,
                 round = 0,
                 cycle = 0,
                 phase = 'Prepare',

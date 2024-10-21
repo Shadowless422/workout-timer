@@ -116,8 +116,8 @@
 
     // Listen for timer updates from the server
     // TODO: add feedback sounds for phase changes and 3,2,1 time left
-    // TODO: change bg and text color according to the current phase
     socket.on('timer-update', (timerState, timerSettings) => {
+        console.log(timerState)
         updatePhaseAndTimer(timerState.phase, timerState.timeLeft);
         updateRoundsLeftText(timerSettings.rounds, timerState.round);
         updateCyclesLeftText(timerSettings.cycles, timerState.cycle);
@@ -158,27 +158,27 @@
                 timerTextColor = 'black';
                 break;
             default:
-                console.warn(`Unknown state: ${timerState.phase}`)
+                console.warn(`Unknown state: ${phase}`)
         }
-        document.getElementById('phase').innerText = phaseText;
-        document.getElementById('timer').innerText = formatTime(timeLeft);
+        document.getElementById('phase').textContent = phaseText;
+        document.getElementById('timer').textContent = formatTime(timeLeft);
         document.getElementById('timer').style.color = timerTextColor;
         document.getElementById('timer-background').style.backgroundColor = timerBgColor;
         document.getElementById('info-separator').style.backgroundColor = timerBgColor;
         
-        // TODO: add background change and timer text color change accordingly
+        // TODO: add sound effect on changes (probably not here though)
     }
 
     function updateRoundsLeftText(totalRounds, currentRound) {
         const roundsLeft = totalRounds - currentRound;
-        document.getElementById('round').innerText = `${roundsLeft}`;
-        document.getElementById('rounds-left-text').innerText = roundsLeft === 1 ? 'ROUND RIMANENTE' : 'ROUND RIMANENTI'
+        document.getElementById('round').textContent = `${roundsLeft}`;
+        document.getElementById('rounds-left-text').textContent = roundsLeft === 1 ? 'ROUND RIMANENTE' : 'ROUND RIMANENTI'
     }
 
     function updateCyclesLeftText(totalCycles, currentCycle) {
         const cyclesLeft = totalCycles - currentCycle;
-        document.getElementById('cycle').innerText = `${cyclesLeft}`;
-        document.getElementById('cycles-left-text').innerText = cyclesLeft === 1 ? 'CICLO RIMANENTE' : 'CICLI RIMANENTI'
+        document.getElementById('cycle').textContent = `${cyclesLeft}`;
+        document.getElementById('cycles-left-text').textContent = cyclesLeft === 1 ? 'CICLO RIMANENTE' : 'CICLI RIMANENTI'
     }
 </script>
 </html>
