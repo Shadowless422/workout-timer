@@ -29,7 +29,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 100%;  /* Ensure the container takes the full height */
+            height: 100%;
             width: 100%;
             text-align: center;
         }
@@ -89,38 +89,47 @@
 </head>
 <body id="timer-background">
     <div class='container'>
-        <div class='header'>
-            <div id='phase'></div>
-        </div>
         <div class='main-content'>
             <span id='timer'></span>
         </div>
         <div class='bottom-bar'>
-            <div class='left'>
-                <span id='round' style='color: dodgerblue'></span>
-                <span>&nbsp;</span>
-                <span class='bottom-bar-label' id='rounds-left-text'></span>
+            <div class='left-side' style="display: grid">
+                <span id='round' style='color: dodgerblue; grid-row: 1; font-size: 9vmin'></span>
+                <span class='bottom-bar-label' id='rounds-left-text' style='grid-row: 2; font-size: 2vmin'></span>
             </div>
-            <div class='center' id='info-separator' style='background-color: #f2f33d; border: 0'></div>
-            <div class='right'>
-                <span id='cycle' style='color: #f2f33d'></span>
-                <span>&nbsp;</span>
-                <span class='bottom-bar-label' id='cycles-left-text'></span>
+            <div class='separator'></div>
+            <div class='center' id='phase' style='font-size: 5vmin; text-wrap: nowrap'></div>
+            <div class='separator'></div>
+            <div class='right-side' style="display: grid">
+                <span id='cycle' style='color: #f2f33d; grid-row: 1; font-size: 9vmin'></span>
+                <span class='bottom-bar-label' id='cycles-left-text' style='grid-row: 2; font-size: 2vmin'></span>
             </div>
         </div>
     </div>
 </body>
+
+<audio id='long-beep' src='/sfx/longbeep.mp3' preload='auto' style='display:none;'></audio>
+<audio id='short-beep' src='/sfx/shortbeep.mp3' preload='auto' style='display:none;'></audio>
+
 <script src='/socket.io/socket.io.js'></script>
 <script>
     const socket = io(); // Connect to the server
 
     // Listen for timer updates from the server
-    // TODO: add feedback sounds for phase changes and 3,2,1 time left
+    // TODO: make audio work in mobile browsers
     socket.on('timer-update', (timerState, timerSettings) => {
-        console.log(timerState)
         updatePhaseAndTimer(timerState.phase, timerState.timeLeft);
         updateRoundsLeftText(timerSettings.rounds, timerState.round);
         updateCyclesLeftText(timerSettings.cycles, timerState.cycle);
+
+        // Sound feedbacks
+        if (timerState.timeLeft <= 3) {
+            if (timerState.timeLeft === 0) {
+                document.getElementById('long-beep').play();
+                return;
+            }
+            document.getElementById('short-beep').play();
+        }
     });
     
     // Utility function to format time as mm:ss
@@ -153,7 +162,7 @@
                 timerTextColor = 'white';
                 break;
             case 'Rest Between Cycles':
-                phaseText = 'PAUSA PRIMA DEL PROSSIMO CICLO'
+                phaseText = 'PAUSA TRA I CICLI'
                 timerBgColor = '#f2f33d';
                 timerTextColor = 'black';
                 break;
@@ -164,21 +173,18 @@
         document.getElementById('timer').textContent = formatTime(timeLeft);
         document.getElementById('timer').style.color = timerTextColor;
         document.getElementById('timer-background').style.backgroundColor = timerBgColor;
-        document.getElementById('info-separator').style.backgroundColor = timerBgColor;
-        
-        // TODO: add sound effect on changes (probably not here though)
     }
 
     function updateRoundsLeftText(totalRounds, currentRound) {
         const roundsLeft = totalRounds - currentRound;
         document.getElementById('round').textContent = `${roundsLeft}`;
-        document.getElementById('rounds-left-text').textContent = roundsLeft === 1 ? 'ROUND RIMANENTE' : 'ROUND RIMANENTI'
+        document.getElementById('rounds-left-text').textContent = roundsLeft === 1 ? 'ROUND RIMASTO' : 'ROUND RIMASTI'
     }
 
     function updateCyclesLeftText(totalCycles, currentCycle) {
         const cyclesLeft = totalCycles - currentCycle;
         document.getElementById('cycle').textContent = `${cyclesLeft}`;
-        document.getElementById('cycles-left-text').textContent = cyclesLeft === 1 ? 'CICLO RIMANENTE' : 'CICLI RIMANENTI'
+        document.getElementById('cycles-left-text').textContent = cyclesLeft === 1 ? 'CICLO RIMASTO' : 'CICLI RIMASTI'
     }
 </script>
 </html>

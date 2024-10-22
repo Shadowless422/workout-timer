@@ -14,6 +14,9 @@ let timerSettings = new TimerSettings();
 let timerState = new TimerState();
 timerState.timeLeft = timerSettings.prepareTime;
 
+// Serve public files
+app.use(express.static('public'));
+
 // Send the timer page
 app.get('/', async (req, res) => {
     res.send(await readFile('./timer.html', 'utf8'));
