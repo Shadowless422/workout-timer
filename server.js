@@ -5,7 +5,7 @@ const TimerSettings = require('./TimerSettings');
 const TimerState = require('./TimerState');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ?? 3000;
 const server = app.listen(port, () => console.log(
     `Timer page available on http://localhost:${port}/\nSettings page available on http://localhost:${port}/settings`));
 const io = socketio(server);
@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
             timerState.isRunning = true;
         } else if (command === 'pause') {
             timerState.isRunning = false;
-        } else if (command === 'stop') {
+        } else if (command === 'reset') {
             timerState.isRunning = false;
 
             // Reset the Workout from the beginning

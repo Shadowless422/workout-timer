@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings page</title>
+    <style>
+        h1 {
+            font-family: Courier, monospace;
+            font-style: normal;
+            text-align: center;
+        }
+        body {
+            font-family: Helvetica, serif;
+            font-style: normal;
+            font-weight: bold;
+            text-align: left;
+        }
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        td {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>Timer Settings</h1>
+    <form>
+        <table>
+            <tr>
+                <td><label for="prepare-time">Prepare time (s)</label></td>
+                <td><input type="number" id="prepare-time" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="workout-time">Workout time (s)</label></td>
+                <td><input type="number" id="workout-time" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rest-time">Rest time (s)</label></td>
+                <td><input type="number" id="rest-time" name="rest-time" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rest-between-cycles">Rest between cycles (s)</label></td>
+                <td><input type="number" id="rest-between-cycles" name="rest-between-cycles" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="rounds">Working rounds</label></td>
+                <td><input type="number" id="rounds" name="rounds" min="1"></td>
+            </tr>
+            <tr>
+                <td><label for="cycles">Full cycles</label></td>
+                <td><input type="number" id="cycles" name="cycles" min="1"></td>
+            </tr>
+        </table>
+        <div style="text-align: center">
+            <button id="submit-settings" type="button">Confirm Settings</button>
+            <br><br>
+            <button id="start-pause" type="button">Start</button>
+            <br>
+            <button id="stop" type="button">Stop</button>
+        </div>
+    </form>
+</body>
+<script src='/socket.io/socket.io.js'></script>
+<script>
+    const socket = io(); // Connect to the server
+
+    // Handle start/pause button click
+    document.getElementById('start-pause').addEventListener('click', function () {
+        const command = this.textContent === 'Start' ? 'start' : 'pause';
+        socket.emit('timer-command', command);
+    });
+
+    // Handle stop button click
+    document.getElementById('stop').addEventListener('click', () => {
+        socket.emit('timer-command', 'stop');
+    });
+
+    // Listen for changes in the input fields, this way the settings are constantly updated
+    /*
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => input.addEventListener('change', sendUpdatedSettings));
+     */
+
+    // Submit settings with the relative button, this way the settings get updated only when confirmed
+    document.getElementById('submit-settings').addEventListener('click', () => {
+        const settings = {
+            prepareTime: parseInt(document.getElementById('prepare-time').value),
+            workoutTime: parseInt(document.getElementById('workout-time').value),
+            restTime: parseInt(document.getElementById('rest-time').value),
+            restBetweenCycles: parseInt(document.getElementById('rest-between-cycles').value),
+            rounds: parseInt(document.getElementById('rounds').value),
+            cycles: parseInt(document.getElementById('cycles').value)
+        };
+
+        socket.emit('new-settings', settings);
+    });
+
+    // Update form with current settings when connected
+    socket.on('settings-update', (timerSettings) => {
+        document.getElementById('prepare-time').value = timerSettings.prepareTime;
+        document.getElementById('workout-time').value = timerSettings.workoutTime;
+        document.getElementById('rest-between-cycles').value = timerSettings.restBetweenCycles;
+        document.getElementById('rest-time').value = timerSettings.restTime;
+        document.getElementById('rounds').value = timerSettings.rounds;
+        document.getElementById('cycles').value = timerSettings.cycles;
+    });
+
+    // Update the start/pause button according to the timer state
+    socket.on('timer-update', (timerState, timerSettings) => {
+        document.getElementById('start-pause').textContent = timerState.isRunning ? 'Pause' : 'Start'
+    });
+</script>
+</html>

@@ -21,9 +21,20 @@
             padding: 10px 20px;
         }
 
+        em {
+            align-self: center;
+            font-weight: bold;
+            font-style: normal;
+            font-size: x-large;
+        }
+
+        span {
+            align-self: center;
+        }
+
         input {
             text-align: center;
-            font-size: xx-large;
+            font-size: xxx-large;
             border-radius: 5px;
             padding: 10px;
             margin: 5px;
@@ -48,6 +59,7 @@
         }
 
         .setting-item {
+            font-size: x-large;
             padding: 15px;
             display: flex;
             justify-content: space-between;
@@ -63,7 +75,7 @@
             width: 100%;
             height: 100%;
             background-color: #f9f9f9;
-            transition: left 0.5s ease;
+            transition: left 0.3s linear;
         }
 
         .page.active {
@@ -73,20 +85,44 @@
 
         button {
             font-size: 85%;
-            padding: 10px;
+            padding: 6px;
             margin: 5px;
-            background-color: #28a745;
+            background-color: #333333;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
 
-        .cancel-button {
+        button.start-pause {
+            font-family: Arial, sans-serif;
+            font-size: 27px;
+            text-align: center;
+            color: white;
+            background-color: #28a745;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: auto;
+        }
+
+        button.reset {
+            font-family: Arial, sans-serif;
+            font-size: large;
+            text-align: center;
+            color: white;
+            background-color: #e7372b;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: auto;
+        }
+
+        button.cancel {
             background-color: #e7372b;
         }
 
-        .save-button {
+        button.save {
             font-weight: bold;
             background-color: #28a745;
         }
@@ -94,6 +130,10 @@
         button:disabled {
             background-color: #ddd;
             cursor: not-allowed;
+        }
+
+        .controls-container {
+            width: max-content; margin: auto;
         }
     </style>
 </head>
@@ -103,44 +143,52 @@
 <div id='main' class='page active'>
     <header>
         <!-- The buttons are needed in order to correctly resize the header and center the h1 -->
-        <button style='background-color: #333333'>&nbsp;</button>
+        <button>&nbsp;</button>
         <h1>Impostazioni</h1>
-        <button style='background-color: #333333'>&nbsp;</button>
+        <button>&nbsp;</button>
     </header>
-    <ul class='settings-list'>
+    <ul class='settings-list' style='align-content: center; flex: content'>
         <li class='setting-item' onclick="showSettingPage('prepare')">
             <span id="prepare-display-name">Preparazione</span>
-            <span id='current-prepare-setting'>00:15</span>
+            <em id='current-prepare-setting'>00:15</em>
         </li>
         <li class='setting-item' onclick="showSettingPage('work')">
             <span id='work-display-name'>Allenamento</span>
-            <span id='current-work-setting'>02:30</span>
+            <em id='current-work-setting'>02:30</em>
         </li>
         <li class='setting-item' onclick="showSettingPage('rest')">
             <span id='rest-display-name'>Riposo</span>
-            <span id="current-rest-setting">01:00</span>
+            <em id="current-rest-setting">01:00</em>
         </li>
         <li class='setting-item' onclick="showSettingPage('rounds')">
             <span id='rounds-display-name'>Round</span>
-            <span id='current-rounds-setting'>5</span>
+            <em id='current-rounds-setting'>5</em>
         </li>
         <li class='setting-item' onclick="showSettingPage('cycles')">
             <span id='cycles-display-name'>Cicli</span>
-            <span id='current-cycles-setting'>1</span>
+            <em id='current-cycles-setting'>1</em>
         </li>
         <li class='setting-item' onclick="showSettingPage('restbc')">
-            <span id='restbc-display-name'>Riposo tra un ciclo e l'altro</span>
-            <span id='current-restbc-setting'>00:45</span>
+            <span id='restbc-display-name'>Pausa tra i cicli</span>
+            <em id='current-restbc-setting'>00:45</em>
         </li>
     </ul>
+    <br><br>
+    <div class='controls-container'>
+        <button class='start-pause' id='start-pause-button'>Avvia</button>
+    </div>
+    <br>
+    <div class='controls-container'>
+        <button class='reset' id='reset-button'>Reset</button>
+    </div>
 </div>
 
 <!-- Single Settings Pages -->
 <div class='page' id='time-setting'>
     <header>
-        <button class='cancel-button' onclick='goBack()'>Annulla</button>
+        <button class='cancel' onclick='goBack()'>Annulla</button>
         <h1 id='time-setting-title'></h1>
-        <button class='save-button' id='time-setting-save-button' onclick='saveSetting()'>Salva</button>
+        <button class='save' id='time-setting-save-button' onclick='saveSetting()'>Salva</button>
     </header>
     <br>
     <br>
@@ -157,9 +205,9 @@
 
 <div class='page' id='number-setting'>
     <header>
-        <button class='cancel-button' onclick='goBack()'>Annulla</button>
+        <button class='cancel' onclick='goBack()'>Annulla</button>
         <h1 id='number-setting-title'></h1>
-        <button class='save-button' id='number-setting-save-button' onclick='saveSetting()'>Salva</button>
+        <button class='save' id='number-setting-save-button' onclick='saveSetting()'>Salva</button>
     </header>
     <br>
     <br>
@@ -176,7 +224,6 @@
     const socket = io(); // Connect to the server
 
     // Update form with current settings when connected
-    // TODO: edit the function according to this page
     socket.on('settings-update', (timerSettings) => {
         document.getElementById('current-prepare-setting').textContent = formatTime(timerSettings.prepareTime);
         document.getElementById('current-work-setting').textContent = formatTime(timerSettings.workoutTime);
@@ -187,11 +234,31 @@
     });
 
     // Update the start/pause button according to the timer state
-    /*
     socket.on('timer-update', (timerState) => {
-        document.getElementById('start-pause').textContent = timerState.isRunning ? 'Pause' : 'Start'
+        //document.getElementById('start-pause-button').textContent = timerState.isRunning ? 'Pausa' : 'Avvia';
+        const button = document.getElementById('start-pause-button');
+        if (timerState.isRunning) {
+            button.textContent = 'Pausa';
+            button.style.color = 'black';
+            button.style.backgroundColor = '#f2f33d';
+        } else {
+            button.textContent = 'Avvia';
+            button.style.color = 'white';
+            button.style.backgroundColor = '#28a745';
+        }
     });
-    */
+
+    // Handle start/pause button click
+    document.getElementById('start-pause-button').addEventListener('click', function () {
+        const command = this.textContent === 'Avvia' ? 'start' : 'pause';
+        socket.emit('timer-command', command);
+    });
+
+    // Handle reset button click
+    document.getElementById('reset-button').addEventListener('click', function () {
+        socket.emit('timer-command', 'reset');
+    });
+    
     // Function to show a specific setting page
     function showSettingPage(setting) {
         const pageId = isTimeSetting(setting) ? 'time-setting' : 'number-setting';
@@ -205,7 +272,6 @@
         const currentSetting = document.getElementById('current-' + setting + '-setting').textContent;
         if (isTimeSetting(setting)) {
             const {mm, ss} = extractTimeComponents(currentSetting);
-            console.log(`${mm}:${ss}`);
             document.getElementById(pageId + '-min').value = mm;
             document.getElementById(pageId + '-sec').value = ss;
         } else {
