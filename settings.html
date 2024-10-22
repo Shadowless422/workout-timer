@@ -96,6 +96,10 @@
         }
 
         button.start-pause {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
             font-family: Arial, sans-serif;
             font-size: 27px;
             text-align: center;
@@ -108,6 +112,10 @@
         }
 
         button.reset {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
             font-family: Arial, sans-serif;
             font-size: large;
             text-align: center;
@@ -134,7 +142,11 @@
         }
 
         .controls-container {
-            width: max-content; margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-column-gap: 10vw;
+            width: max-content;
+            margin: auto;
         }
     </style>
 </head>
@@ -176,11 +188,8 @@
     </ul>
     <br><br>
     <div class='controls-container'>
-        <button class='start-pause' id='start-pause-button'>Avvia</button>
-    </div>
-    <br>
-    <div class='controls-container'>
-        <button class='reset' id='reset-button'>Reset</button>
+        <button class='reset' id='reset-button' style="grid-column: 1">Reset</button>
+        <button class='start-pause' id='start-pause-button' style="grid-column: 2">Avvia</button>
     </div>
 </div>
 

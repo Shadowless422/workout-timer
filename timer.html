@@ -110,13 +110,24 @@
 
 <audio id='long-beep' src='/sfx/longbeep.mp3' preload='auto' style='display:none;'></audio>
 <audio id='short-beep' src='/sfx/shortbeep.mp3' preload='auto' style='display:none;'></audio>
+<audio id='silence' src='/sfx/silence.mp3' preload='auto' style='display:none;'></audio>
 
 <script src='/socket.io/socket.io.js'></script>
 <script>
     const socket = io(); // Connect to the server
 
+    // Adding an event listener to unlock audio context on user interaction
+    function unlockAudio() {
+        document.getElementById('silence').play().catch(() => {});
+        document.removeEventListener('touchstart', unlockAudio, { passive: true });
+        document.removeEventListener('click', unlockAudio);
+    }
+
+    document.addEventListener('touchstart', unlockAudio, { passive: true });
+    document.addEventListener('click', unlockAudio);
+
+
     // Listen for timer updates from the server
-    // TODO: make audio work in mobile browsers
     socket.on('timer-update', (timerState, timerSettings) => {
         updatePhaseAndTimer(timerState.phase, timerState.timeLeft);
         updateRoundsLeftText(timerSettings.rounds, timerState.round);
