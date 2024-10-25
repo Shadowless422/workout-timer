@@ -28,14 +28,11 @@ app.get('/settings', async (req, res) => {
 });
 
 function updateTimer() {
-    if (!timerState.isRunning)
-        return;
     if (timerState.timeLeft > 0) {
         timerState.timeLeft--;
         return;
     }
 
-    // The time left is 0
     const isLastRound = timerState.round === timerSettings.rounds;
     const isLastCycle = timerState.cycle === timerSettings.cycles;
 
@@ -64,7 +61,7 @@ function updateTimer() {
             break;
         case 'Rest Between Cycles':
             timerState.phase = 'Work';
-            timerState.timeLeft = timerSettings.prepareTime;
+            timerState.timeLeft = timerSettings.workoutTime;
             break;
         default:
             timerState.phase = 'Rest';
@@ -76,8 +73,10 @@ function updateTimer() {
 
 // Update the timer every second
 setInterval(() => {
-    updateTimer();
-    io.emit('timer-update', timerState, timerSettings);
+    if (timerState.isRunning) {
+        updateTimer();
+        io.emit('timer-update', timerState, timerSettings);
+    }
 }, 1000);
 
 // Handle socket connections
